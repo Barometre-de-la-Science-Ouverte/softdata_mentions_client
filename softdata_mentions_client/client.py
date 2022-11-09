@@ -19,6 +19,7 @@ import types
 import logging
 import logging.handlers
 import multiprocessing
+from retry import retry
 
 """
     Run the software and dataset mention recognizer services on collections of harvested PDF documents
@@ -140,7 +141,7 @@ class softdata_mentions_client(object):
 
         envFilePath = os.path.join(self.config["data_path"], 'entries_dataset')
         self.env_dataset = lmdb.open(envFilePath, map_size=map_size)
-
+    @retry(tries=3, delay=2)
     def annotate_directory(self, target, directory, force=False):
         # recursive directory walk for all pdf documents, target indicate if we process for software ("software") 
         # or dataset ("dataset") mentions

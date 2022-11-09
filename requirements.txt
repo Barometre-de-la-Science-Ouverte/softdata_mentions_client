@@ -2,3 +2,4 @@ requests
 lmdb==1.2.1
 boto3
 pymongo
+retry
