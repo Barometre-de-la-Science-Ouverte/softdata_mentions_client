@@ -141,6 +141,7 @@ class softdata_mentions_client(object):
 
         envFilePath = os.path.join(self.config["data_path"], 'entries_dataset')
         self.env_dataset = lmdb.open(envFilePath, map_size=map_size)
+
     @retry(tries=3, delay=2)
     def annotate_directory(self, target, directory, force=False):
         # recursive directory walk for all pdf documents, target indicate if we process for software ("software") 
@@ -156,10 +157,10 @@ class softdata_mentions_client(object):
         sys.stdout.write("\rtotal process: " + str(nb_total) + " - accumulated runtime: 0 s - 0 PDF/s")
         sys.stdout.flush()
 
-        if target == "software":
-            local_env = self.env_software
-        else:
-            local_env = self.env_dataset
+        # if target == "software":
+        #     local_env = self.env_software
+        # else:
+        #     local_env = self.env_dataset
 
         for root, directories, filenames in os.walk(directory):
             for filename in filenames:
@@ -176,22 +177,22 @@ class softdata_mentions_client(object):
                     print("\ninput:", filename)
                     print("output:", filename_json)
 
-                    # if the json file already exists and not force, we skip 
-                    if os.path.isfile(os.path.join(root, filename_json)) and not force:
-                        # check that this id is considered in the lmdb keeping track of the process
-                        with local_env.begin() as txn:
-                            status = txn.get(sha1.encode(encoding='UTF-8'))
-                        if status is None:
-                            with local_env.begin(write=True) as txn2:
-                                txn2.put(sha1.encode(encoding='UTF-8'), "True".encode(encoding='UTF-8')) 
-                        continue
+                    # # if the json file already exists and not force, we skip
+                    # if os.path.isfile(os.path.join(root, filename_json)) and not force:
+                    #     # check that this id is considered in the lmdb keeping track of the process
+                    #     with local_env.begin() as txn:
+                    #         status = txn.get(sha1.encode(encoding='UTF-8'))
+                    #     if status is None:
+                    #         with local_env.begin(write=True) as txn2:
+                    #             txn2.put(sha1.encode(encoding='UTF-8'), "True".encode(encoding='UTF-8'))
+                    #     continue
 
-                    # if identifier already processed successfully in the local lmdb, we skip
-                    # the hash of the PDF file is used as unique identifier for the PDF (SHA1)
-                    with local_env.begin() as txn:
-                        status = txn.get(sha1.encode(encoding='UTF-8'))
-                        if status is not None and not force:
-                            continue
+                    # # if identifier already processed successfully in the local lmdb, we skip
+                    # # the hash of the PDF file is used as unique identifier for the PDF (SHA1)
+                    # with local_env.begin() as txn:
+                    #     status = txn.get(sha1.encode(encoding='UTF-8'))
+                    #     if status is not None and not force:
+                    #         continue
 
                     pdf_files.append(os.path.join(root,filename))
                     out_files.append(os.path.join(root, filename_json))
@@ -534,20 +535,20 @@ class softdata_mentions_client(object):
                 with open(file_out, "w", encoding="utf-8") as json_file:
                     json_file.write(json.dumps(jsonObject))
 
-        # for keeping track of the processing
-        # update processed entry in the lmdb (having entities or not) and failure
-        if target == "software":
-            local_env = self.env_software
-        else:
-            local_env = self.env_dataset
+        # # for keeping track of the processing
+        # # update processed entry in the lmdb (having entities or not) and failure
+        # if target == "software":
+        #     local_env = self.env_software
+        # else:
+        #     local_env = self.env_dataset
 
-        if local_env is not None and full_record is not None:
-            with local_env.begin(write=True) as txn:
-                if jsonObject is not None:
-                    txn.put(full_record['id'].encode(encoding='UTF-8'), "True".encode(encoding='UTF-8')) 
-                else:
-                    # the process failed
-                    txn.put(full_record['id'].encode(encoding='UTF-8'), "False".encode(encoding='UTF-8'))
+        # if local_env is not None and full_record is not None:
+        #     with local_env.begin(write=True) as txn:
+        #         if jsonObject is not None:
+        #             txn.put(full_record['id'].encode(encoding='UTF-8'), "True".encode(encoding='UTF-8'))
+        #         else:
+        #             # the process failed
+        #             txn.put(full_record['id'].encode(encoding='UTF-8'), "False".encode(encoding='UTF-8'))
 
         if self.scorched_earth and jsonObject is not None:
             # processed is done, remove local PDF file
