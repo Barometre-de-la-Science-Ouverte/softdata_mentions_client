@@ -42,15 +42,20 @@ class softdata_mentions_client(object):
     """
     Python client for using the Softcite software and DataStet dataset mention services. 
     """
+    def __init__(
+        self,
+        config_path=None,
+        **kwargs
+    ):
+        if config_path:
+            self._load_config(config_path)
+        else:
+            self.config = kwargs
 
-    def __init__(self, config_path='./config.json'):
-        self.config = None
-        
         # standard lmdb environment for keeping track of the status of processing
         self.env_software = None
         self.env_dataset = None
 
-        self._load_config(config_path)
         self._init_lmdb()
 
         if self.config['bucket_name'] is not None and len(self.config['bucket_name']) > 0:
@@ -91,13 +96,10 @@ class softdata_mentions_client(object):
 
     def _load_config(self, path='./config.json'):
         """
-        Load the json configuration 
+        Load the json configuration
         """
         config_json = open(path).read()
         self.config = json.loads(config_json)
-        if not "timeout" in self.config:
-            # this is the default value for a service timeout
-            self.config["timeout"] = 600
 
     def service_isalive(self, target):
         # test if the service mention recognizers are up and running...
