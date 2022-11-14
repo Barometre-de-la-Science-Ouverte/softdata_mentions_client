@@ -58,7 +58,7 @@ class softdata_mentions_client(object):
 
         self._init_lmdb()
 
-        if self.config['bucket_name'] is not None and len(self.config['bucket_name']) > 0:
+        if hasattr(self.config, 'bucket_name') and len(self.config['bucket_name']) > 0:
             self.s3 = S3.S3(self.config)
 
         self.mongo_db_software = None
