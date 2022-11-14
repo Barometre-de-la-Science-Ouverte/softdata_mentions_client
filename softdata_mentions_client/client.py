@@ -139,9 +139,13 @@ class softdata_mentions_client(object):
     def _init_lmdb(self):
         # open in write mode
         envFilePath = os.path.join(self.config["data_path"], 'entries_software')
+        if not os.path.exists(envFilePath):
+            os.makedirs(envFilePath)
         self.env_software = lmdb.open(envFilePath, map_size=map_size)
 
         envFilePath = os.path.join(self.config["data_path"], 'entries_dataset')
+        if not os.path.exists(envFilePath):
+            os.makedirs(envFilePath)
         self.env_dataset = lmdb.open(envFilePath, map_size=map_size)
 
     @retry(tries=3, delay=2)
